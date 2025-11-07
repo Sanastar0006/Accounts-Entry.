@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Staff Attendance System</title>
+<style>
+  body {font-family: Arial, sans-serif; background:#f2f2f2; padding:20px;}
+  .container {max-width:450px;margin:auto;background:white;padding:20px;border-radius:10px;box-shadow:0 0 10px #ccc;}
+  input,select,button {width:100%;margin:8px 0;padding:10px;border:1px solid #ccc;border-radius:5px;}
+  button {background:#007bff;color:white;font-weight:bold;cursor:pointer;}
+  button:hover {background:#0056b3;}
+  video,canvas {width:100%;border-radius:10px;margin-top:10px;}
+</style>
+</head>
+<body>
+  <div class="container">
+    <h2>Staff Attendance</h2>
+    <label>Username (Email)</label>
+    <input type="text" id="username" placeholder="Enter Username" required>
+
+    <label>Password</label>
+    <input type="password" id="password" placeholder="Enter Password" required>
+
+    <label>Status</label>
+    <select id="status">
+      <option value="Present">Present</option>
+      <option value="Absent">Absent</option>
+      <option value="Half Day Leave">Half Day Leave</option>
+    </select>
+
+    <button onclick="loginAndMark()">Mark Attendance</button>
+    <p id="msg"></p>
+
+    <video id="video" autoplay></video>
+    <canvas id="canvas" style="display:none;"></canvas>
+  </div>
+
+<script>
+const scriptURL = "https://script.google.com/macros/s/AKfycbzRGwbj68CmsVzEcgvXNUerjxI-asteWzONGoRCseugAGKiC9_aYqIZP6ssX37_Ube-7Q/exec";
+
+async function loginAndMark() {
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value.trim();
+  const status = document.getElementById('status').value;
+  const msg = document.getElementById('msg');
+
+  if(!username || !password){ msg.innerText="Enter Username & Password"; return; }
+
+  msg.innerText="Capturing photo & location...";
+
+  // Capture photo
+  const video = document.getElementById('video');
+  const canvas = document.getElementById('canvas');
+  const stream = await navigator.mediaDevices.getUserMedia({video:true});
+  video.srcObject = stream;
+  await new Promise(r => setTimeout(r, 2000)); // wait camera 2s
+
+  const ctx = canvas.getContext('2d');
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  const imageBase64 = canvas.toDataURL('image/png');
+  stream.getTracks().forEach(t => t.stop());
+
+  // Get location
+  navigator.geolocation.getCurrentPosition(async (pos)=>{
+    const latitude = pos.coords.latitude;
+    const longitude = pos.coords.longitude;
+
+    msg.innerText = "Submitting...";
+
+    const data = {username, password, status, latitude, longitude, photo:imageBase64};
+
+    try {
+      const response = await fetch(scriptURL, {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify(data)
+      });
+      const text = await response.text();
+      msg.innerText = text || "Marked successfully!";
+    } catch(err){
+      msg.innerText = "Error: " + err.message;
+    }
+  }, ()=>{
+    msg.innerText = "Location access denied!";
+  });
+}
+</script>
+</body>
+</html>
