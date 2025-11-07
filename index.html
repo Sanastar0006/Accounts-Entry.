@@ -187,17 +187,22 @@ async function postJson(obj){
   try{
     const r = await fetch(WEB_APP_URL, {
   method: 'POST',
-  mode: 'no-cors',        // <— fix: browser skips CORS check
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ action: 'attendance', payload: payload })
 })
-.then(() => {
-  alert('✅ Attendance marked (check your Sheet/Drive)');
+.then(response => response.json())
+.then(data => {
+  if (data.ok) {
+    alert('✅ Attendance Saved!');
+  } else {
+    alert('⚠️ Error: ' + (data.error || 'Unknown'));
+  }
 })
 .catch(err => {
-  console.error('❌ Fetch error', err);
-  alert('❌ Could not reach server');
+  console.error('Fetch Error:', err);
+  alert('❌ Network error, please retry');
 });
 </script>
 </body>
 </html>
+
