@@ -1,368 +1,254 @@
-<!--
-LUXURY Account Entry Portal — Frontend + Apps Script
-
-This document contains a single-file frontend (index.html) with a luxury dark-blue + gold UI and an Apps Script (Code.gs) to deploy as a Web App. It supports:
-- Multi-user login validated against your Google Sheet tab named "User" (Username / Password)
-- Account Entry (Receipt/Payment/Journal/Contra) with dynamic transaction dropdown
-- Payment Mode: Cash (denomination) or Bank (auto-fill account & IFSC)
-- Denomination portal (Income / Expenses / Cash-in-hand calculation)
-- Separate sheets in your Google Sheet file: Transaction, Denomination, Balance sheet, P&L, User
-- All saves (transactions, denominations) write immediately to your Google Sheet
-
-IMPORTANT: After pasting Code.gs and deploying, copy the Web App URL and replace GAS_WEB_APP_URL in the HTML below.
-
-================ index.html (Luxury UI) ================
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Account Entry — Luxury Portal</title>
-<link rel="preconnect" href="https://fonts.gstatic.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Account Entry Portal</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
-:root{--bg:#071029;--card:#071a33;--gold:#d4af37;--muted:#9fb0c8;--glass:rgba(255,255,255,0.04)}
-*{box-sizing:border-box}
-body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;background:linear-gradient(180deg,#031226 0%, #071029 100%);color:#eaf4ff}
-.container{max-width:1200px;margin:28px auto;padding:20px}
-.header{display:flex;justify-content:space-between;align-items:center}
-.brand{display:flex;gap:12px;align-items:center}
-.logo{width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,var(--gold),#ffd87a);display:flex;align-items:center;justify-content:center;color:#071029;font-weight:800;font-size:18px}
-.title{font-size:20px;font-weight:700}
-.sub{color:var(--muted);font-size:13px}
-.card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.04);box-shadow:0 12px 40px rgba(2,9,23,0.6);border-radius:14px;padding:18px;margin-top:18px}
-.grid{display:grid;grid-template-columns:1fr 360px;gap:18px}
-.form{padding:12px}
-.field{margin-bottom:12px}
-label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
-input[type=text], input[type=password], input[type=number], input[type=date], select, textarea{width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:#eaf4ff}
-textarea{min-height:140px;resize:vertical}
-.row{display:flex;gap:10px}
-.btn{background:linear-gradient(90deg,var(--gold),#ffd87a);color:#071029;border:none;padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:700}
-.btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
-.tabs{display:flex;gap:8px;margin-top:12px}
-.tab{padding:10px 12px;border-radius:10px;cursor:pointer;background:rgba(255,255,255,0.02)}
-.tab.active{background:linear-gradient(90deg,rgba(212,175,55,0.12),rgba(212,175,55,0.08));border:1px solid rgba(212,175,55,0.12)}
-.small{font-size:13px;color:var(--muted)}
-.hidden{display:none}
-.footer{margin-top:12px;color:var(--muted);font-size:13px}
-.preview{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:10px;padding:12px;border:1px solid rgba(255,255,255,0.03)}
-.denom-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.denom-cell{background:var(--glass);padding:10px;border-radius:8px;text-align:center}
-.denom-cell input{width:80px;margin-top:8px}
-.header-right{display:flex;gap:12px;align-items:center}
-.user-pill{background:rgba(255,255,255,0.03);padding:8px 12px;border-radius:999px}
-.alert{padding:10px;border-radius:8px;margin-top:10px}
-.alert.ok{background:rgba(16,185,129,0.12);color:#9fe6c5}
-.alert.err{background:rgba(239,68,68,0.08);color:#ffb3b3}
-@media (max-width:1000px){.grid{grid-template-columns:1fr}}
+  body {
+    font-family: "Poppins", sans-serif;
+    background: radial-gradient(circle at top left,#0a1b3c 0%,#0e224d 60%,#071022 100%);
+    color:#fff;
+    margin:0;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .card {
+    background: rgba(255,255,255,0.08);
+    border:1px solid rgba(255,255,255,0.15);
+    border-radius:20px;
+    box-shadow:0 4px 30px rgba(0,0,0,0.4);
+    backdrop-filter: blur(10px);
+    width:90%;
+    max-width:600px;
+    padding:2rem;
+    animation: fadeIn 0.8s ease;
+  }
+  @keyframes fadeIn {from{opacity:0; transform:translateY(20px);} to{opacity:1; transform:translateY(0);}}
+  h1 {text-align:center; margin-bottom:1rem; color:#ffd700;}
+  input,select,textarea {
+    width:100%;
+    padding:0.6rem 0.8rem;
+    margin-top:0.3rem;
+    border:none;
+    border-radius:8px;
+    outline:none;
+    background:#fff;
+    color:#000;
+  }
+  label {margin-top:0.6rem; display:block;}
+  button {
+    margin-top:1rem;
+    padding:0.6rem 1.2rem;
+    border:none;
+    border-radius:10px;
+    font-weight:600;
+    background:linear-gradient(45deg,#ffb700,#ff8c00);
+    cursor:pointer;
+    color:#000;
+  }
+  button:hover {filter:brightness(1.1);}
+  .hidden {display:none;}
+  .tab-btn {margin-right:0.3rem;}
+  .tabs {text-align:center; margin-bottom:1rem;}
 </style>
 </head>
 <body>
-<div class="container">
-  <div class="header">
-    <div class="brand">
-      <div class="logo">JN</div>
-      <div>
-        <div class="title">Jothianandham Accounts — Portal</div>
-        <div class="sub">Luxury Dashboard • Secure Transactions</div>
-      </div>
-    </div>
-    <div class="header-right">
-      <div class="small">Server: Google Apps Script</div>
-      <div id="userPill" class="user-pill hidden">admin</div>
-    </div>
+
+<div class="card" id="login-card">
+  <h1><i class="fa-solid fa-vault"></i> Account Portal</h1>
+  <label>Username</label><input id="user" type="text">
+  <label>Password</label><input id="pass" type="password">
+  <button onclick="login()">Login</button>
+  <p id="login-msg"></p>
+</div>
+
+<div class="card hidden" id="portal-card">
+  <div class="tabs">
+    <button class="tab-btn" onclick="showTab('entry')">Account Entry</button>
+    <button class="tab-btn" onclick="showTab('denom')">Denomination</button>
   </div>
 
-  <!-- LOGIN CARD -->
-  <div id="loginCard" class="card">
-    <div style="display:flex;gap:18px;align-items:center">
-      <div style="flex:1">
-        <h2 style="margin:0;color:var(--gold)">Sign in to continue</h2>
-        <div class="small" style="margin-top:6px;">Multiple users supported — credentials are stored in your sheet 'User'</div>
-        <div style="margin-top:12px;max-width:520px">
-          <div class="field">
-            <label>Username</label>
-            <input id="loginUser" type="text" placeholder="username" />
-          </div>
-          <div class="field">
-            <label>Password</label>
-            <input id="loginPass" type="password" placeholder="password" />
-          </div>
-          <div class="row">
-            <button id="doLogin" class="btn">Sign in</button>
-            <button id="loginDemo" class="btn ghost">Use demo (admin/admin123)</button>
-          </div>
-          <div id="loginMsg" class="small" style="margin-top:8px;color:#ffb3b3"></div>
-        </div>
-      </div>
-      <div style="width:320px">
-        <div class="preview">
-          <div class="small">Quick tips</div>
-          <ul class="small">
-            <li>Use the Denomination portal for Cash entries (auto-calculates total)</li>
-            <li>Bank selection auto-fills account no & IFSC</li>
-            <li>Descriptions must be 500–1500 characters</li>
-          </ul>
-        </div>
-      </div>
+  <!-- Account Entry -->
+  <div id="entry">
+    <h1>Transaction Entry</h1>
+    <label>Date</label><input type="date" id="date">
+    <label>Account Head</label>
+    <select id="accountHead" onchange="populateTransactions()">
+      <option value="">Select</option>
+      <option>Receipt</option>
+      <option>Payment</option>
+      <option>Journal</option>
+      <option>Contra</option>
+    </select>
+
+    <label>Transaction</label>
+    <select id="transaction"></select>
+
+    <label>Payment Mode</label><br>
+    <input type="radio" name="paymode" value="Cash" onchange="togglePayment(this.value)"> Cash
+    <input type="radio" name="paymode" value="Bank" onchange="togglePayment(this.value)"> Bank
+
+    <div id="bankDetails" class="hidden">
+      <label>Account Name</label>
+      <select id="bankName" onchange="fillBankDetails()">
+        <option value="">Select</option>
+        <option>JOTHIANANDHAM CHITS PRIVATE LIMITED</option>
+        <option>Ashok sir AC KVB</option>
+        <option>Ashok sir AC Gpay</option>
+        <option>Dhanapal sir AC</option>
+        <option>Dhanapal sir Axis AC</option>
+      </select>
+      <label>Account No</label><input id="accNo" readonly>
+      <label>IFSC</label><input id="ifsc" readonly>
     </div>
+
+    <div id="denomination" class="hidden">
+      <h3>Cash Denomination</h3>
+      <table style="width:100%;text-align:center;color:#fff;">
+        <tr><th>Value</th><th>Nos</th><th>Amount</th></tr>
+        <tbody id="denoRows"></tbody>
+      </table>
+      <p>Total: <span id="totalAmt">0</span></p>
+    </div>
+
+    <label>Amount</label><input id="amount" type="number">
+    <label>Description</label><textarea id="desc" minlength="10" maxlength="1500"></textarea>
+
+    <button onclick="saveData()">Save</button>
+    <button onclick="clearForm()">Clear</button>
+    <p id="msg"></p>
   </div>
 
-  <!-- MAIN DASHBOARD -->
-  <div id="mainCard" class="card hidden">
-    <div style="display:flex;justify-content:space-between;align-items:center">
-      <div style="display:flex;gap:12px;align-items:center">
-        <div class="tabs">
-          <div class="tab active" data-tab="entry">Account Entry</div>
-          <div class="tab" data-tab="denom">Denomination</div>
-          <div class="tab" data-tab="cash">Cash Entry</div>
-          <div class="tab" data-tab="bank">Bank Entry</div>
-          <div class="tab" data-tab="combined">Combined</div>
-        </div>
-      </div>
-      <div style="display:flex;gap:8px;align-items:center">
-        <div id="curUser" class="small"></div>
-        <button id="logoutBtn" class="btn ghost">Logout</button>
-      </div>
-    </div>
-
-    <div class="grid" style="margin-top:16px">
-      <!-- LEFT: FORMS & TABS -->
-      <div>
-        <!-- ENTRY TAB -->
-        <div id="tab-entry" class="form">
-          <h3 style="margin-top:0;color:var(--gold)">Account Entry</h3>
-          <form id="entryForm">
-            <div class="field">
-              <label>Date</label>
-              <input id="date" type="date" required />
-            </div>
-            <div class="row">
-              <div style="flex:1" class="field">
-                <label>Account head</label>
-                <select id="accountHead"></select>
-              </div>
-              <div style="width:250px" class="field">
-                <label>Transaction</label>
-                <select id="transactionSelect"></select>
-              </div>
-            </div>
-
-            <div class="row">
-              <div style="flex:1" class="field">
-                <label>Payment mode</label>
-                <div style="display:flex;gap:12px;align-items:center">
-                  <label><input type="radio" name="mode" value="Cash" checked /> Cash</label>
-                  <label><input type="radio" name="mode" value="Bank" /> Bank</label>
-                </div>
-              </div>
-              <div style="width:260px" id="bankBlock" class="field hidden">
-                <label>Account name</label>
-                <select id="bankAccount"></select>
-                <div style="margin-top:8px">
-                  <input id="accNo" readonly placeholder="Account No" />
-                </div>
-                <div style="margin-top:8px">
-                  <input id="ifsc" readonly placeholder="IFSC" />
-                </div>
-              </div>
-            </div>
-
-            <div class="row">
-              <div style="flex:1" class="field">
-                <label>Amount</label>
-                <input id="amount" type="number" step="0.01" placeholder="If Cash + Denom then auto" />
-              </div>
-              <div style="width:220px" class="field">
-                <label>Value / Nos / Amount</label>
-                <div class="row"><button id="openDenomBtn" type="button" class="btn ghost">Open Denomination</button></div>
-              </div>
-            </div>
-
-            <div class="field">
-              <label>Description (500–1500 chars)</label>
-              <textarea id="description" minlength="500" maxlength="1500"></textarea>
-            </div>
-
-            <div style="display:flex;gap:10px;align-items:center;margin-top:8px">
-              <button class="btn" type="submit">Save</button>
-              <button id="clearBtn" type="button" class="btn ghost">Clear</button>
-              <div id="entryMsg" class="small" style="margin-left:12px;color:#ffb3b3"></div>
-            </div>
-          </form>
-        </div>
-
-        <!-- DENOMINATION TAB -->
-        <div id="tab-denom" class="form hidden">
-          <h3 style="margin-top:0;color:var(--gold)">Denomination Portal</h3>
-          <div class="denom-grid">
-            <div class="denom-cell"><div class="small">500</div><input data-val="500" class="denom nos" type="number" min="0" /></div>
-            <div class="denom-cell"><div class="small">200</div><input data-val="200" class="denom nos" type="number" min="0" /></div>
-            <div class="denom-cell"><div class="small">100</div><input data-val="100" class="denom nos" type="number" min="0" /></div>
-            <div class="denom-cell"><div class="small">50</div><input data-val="50" class="denom nos" type="number" min="0" /></div>
-            <div class="denom-cell"><div class="small">20</div><input data-val="20" class="denom nos" type="number" min="0" /></div>
-            <div class="denom-cell"><div class="small">10</div><input data-val="10" class="denom nos" type="number" min="0" /></div>
-            <div class="denom-cell"><div class="small">5</div><input data-val="5" class="denom nos" type="number" min="0" /></div>
-            <div class="denom-cell"><div class="small">2</div><input data-val="2" class="denom nos" type="number" min="0" /></div>
-            <div class="denom-cell"><div class="small">1</div><input data-val="1" class="denom nos" type="number" min="0" /></div>
-          </div>
-
-          <div style="margin-top:12px;display:flex;gap:8px;align-items:center">
-            <button id="saveDenom" class="btn">Save Denomination</button>
-            <button id="clearDenom" class="btn ghost">Clear</button>
-            <div id="denomMsg" class="small" style="margin-left:12px;color:#9fb0c8"></div>
-          </div>
-
-          <div style="margin-top:12px" class="preview" id="denomPreview"></div>
-        </div>
-
-        <!-- CASH TAB -->
-        <div id="tab-cash" class="form hidden"><h3 style="margin-top:0;color:var(--gold)">Cash Entry</h3><div id="cashList"></div></div>
-        <!-- BANK TAB -->
-        <div id="tab-bank" class="form hidden"><h3 style="margin-top:0;color:var(--gold)">Bank Entry</h3><div id="bankList"></div></div>
-        <!-- COMBINED TAB -->
-        <div id="tab-combined" class="form hidden"><h3 style="margin-top:0;color:var(--gold)">Combined</h3><div id="combinedList"></div></div>
-
-      </div>
-
-      <!-- RIGHT: SUMMARY / Quick actions -->
-      <div>
-        <div class="preview">
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <div><strong>Quick Summary</strong><div class="small">Latest transactions & cash</div></div>
-            <div><button id="refreshBtn" class="btn ghost">Refresh</button></div>
-          </div>
-          <div id="quickPreview" style="margin-top:12px;font-size:13px;color:var(--muted)">No data loaded</div>
-        </div>
-
-        <div class="preview" style="margin-top:12px">
-          <div><strong>Account Details</strong></div>
-          <div class="small" style="margin-top:8px">Predefined bank accounts (auto fill)</div>
-          <ul class="small" style="margin-top:8px;color:var(--muted)">
-            <li>JOTHIANANDHAM CHITS PRIVATE LIMITED — 1647135000003804 — KVBL0001647</li>
-            <li>Ashok sir AC KVB — 1647172000005736 — KVBL0001647</li>
-            <li>Ashok sir AC Gpay — Ashok sir Gpay-455 — Gpay-00000</li>
-            <li>Dhanapal sir AC — Dhanapal sir AC-4735 — Gpay-4735</li>
-            <li>Dhanapal sir Axis AC — 925010008681059 — UTIB0001563</li>
-          </ul>
-        </div>
-
-      </div>
-    </div>
-
-    <div class="footer">&copy; Jothianandham Chits — Account Entry • Deployed on Google Apps Script</div>
+  <!-- Denomination Tab -->
+  <div id="denom" class="hidden">
+    <h1>Denomination Portal</h1>
+    <p>Auto populated when you save Cash entries.</p>
   </div>
-
 </div>
 
 <script>
-// ---------- CONFIG ----------
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbxGOC2EQsU9nga6IZ5osgTNElQ3Sn1jS-Oq2EhvtPfgEXAxAd-0MRYQ9em1Qg-9dAuE/exec'; // <-- REPLACE with your deployed web app URL
+const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx7qtjwNAkIuCHE5TEaJtm6GW2Di-tSjeTz8QGHpc6U7i0L0w3HitKDV7Jzk0vT-IXL/exec";
 
-// TRANSACTIONS
-const TRANSACTIONS = {
-  Receipt:[ 'Due Amount','TRY Branch B2B Due Amount','Loan return','Interest gave','MD investment','JD 1 investment','JD 2 investment','Office Expenses Return','Office Maintenance Return','Salary return','Salary Advance Return','Settlement amount Return','Loan Return','Personal Amount Return','A/Withdrawn','Petrol allowance Return','Cancel Chit Commission Amount'],
-  Payment:[ 'Office Expenses','Office Maintenance','Salary','Salary Advance','Settlement amount','Loan','Personal Amount','Cash Deposited','Petrol Allowance','Interest Amount Paid To','Adjustment Amount','Loan return','Travel Allowance','Cancel chit','Bank Transfer','Adjustment Entry'],
-  Journal:['Journal Entry'], Contra:['Contra Entry']
-};
-
-const BANK_ACCOUNTS = {
-  'JOTHIANANDHAM CHITS PRIVATE LIMITED':{acc:'1647135000003804', ifsc:'KVBL0001647'},
-  'Ashok sir AC KVB':{acc:'1647172000005736', ifsc:'KVBL0001647'},
-  'Ashok sir AC Gpay':{acc:'Ashok sir Gpay-455', ifsc:'Gpay-00000'},
-  'Dhanapal sir AC':{acc:'Dhanapal sir AC-4735', ifsc:'Gpay-4735'},
-  'Dhanapal sir Axis AC':{acc:'925010008681059', ifsc:'UTIB0001563'}
-};
-
-// UI refs
-const loginCard = document.getElementById('loginCard');
-const mainCard = document.getElementById('mainCard');
-const userPill = document.getElementById('userPill');
-const curUser = document.getElementById('curUser');
-const loginMsg = document.getElementById('loginMsg');
-const doLogin = document.getElementById('doLogin');
-const loginDemo = document.getElementById('loginDemo');
-const logoutBtn = document.getElementById('logoutBtn');
-
-// tabs
-document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click', (e)=>{ document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active')); e.target.classList.add('active'); const tab = e.target.dataset.tab; showTab(tab); }));
-function showTab(name){ document.querySelectorAll('[id^="tab-"]').forEach(d=>d.classList.add('hidden')); document.getElementById('tab-'+name).classList.remove('hidden'); }
-
-// populate account head & transactions
-const accountHead = document.getElementById('accountHead'); const transactionSelect = document.getElementById('transactionSelect');
-['Receipt','Payment','Journal','Contra'].forEach(h=>{ const o=document.createElement('option'); o.value=h; o.textContent=h; accountHead.appendChild(o); });
-accountHead.addEventListener('change', ()=>{ const head=accountHead.value; transactionSelect.innerHTML=''; TRANSACTIONS[head].forEach(t=>{ const o=document.createElement('option'); o.value=t; o.textContent=t; transactionSelect.appendChild(o); }); });
-accountHead.dispatchEvent(new Event('change'));
-
-// bank accounts
-function populateBank(){ const sel=document.getElementById('bankAccount'); sel.innerHTML=''; Object.keys(BANK_ACCOUNTS).forEach(k=>{ const o=document.createElement('option'); o.value=k; o.textContent=k; sel.appendChild(o); }); sel.addEventListener('change', ()=>{ const v=sel.value; const d=BANK_ACCOUNTS[v]; document.getElementById('accNo').value=d.acc; document.getElementById('ifsc').value=d.ifsc; }); sel.dispatchEvent(new Event('change')); }
-populateBank();
-
-// toggle mode
-function toggleMode(mode){ if(mode==='Cash'){ document.getElementById('bankBlock').classList.add('hidden'); } else { document.getElementById('bankBlock').classList.remove('hidden'); } }
-document.querySelectorAll('input[name="mode"]').forEach(r=>r.addEventListener('change', (e)=>toggleMode(e.target.value)));
-
-// denomination logic
-function computeDenom(){ let total=0; const notes={}; document.querySelectorAll('.denom.nos').forEach(inp=>{ const v=parseInt(inp.value)||0; const val=parseInt(inp.dataset.val); notes[val]=v; total += v*val; }); let preview=''; Object.keys(notes).sort((a,b)=>b-a).forEach(k=>{ preview += k+' × '+notes[k]+' = '+(k*notes[k])+'
-'; }); preview += '
-Total: '+total; document.getElementById('denomPreview').textContent=preview; return {total,notes}; }
-document.querySelectorAll('.denom.nos').forEach(i=>i.addEventListener('input', computeDenom));
-
-// open denom from entry
-document.getElementById('openDenomBtn').addEventListener('click', ()=>{ document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); document.querySelector('[data-tab="denom"]').classList.add('active'); showTab('denom'); });
-
-// save denom
-document.getElementById('saveDenom').addEventListener('click', async ()=>{
-  const d = computeDenom();
-  const payload = { notes: d.notes, total: d.total };
-  try{
-    const r = await fetch(GAS_URL + '?action=saveDenomination', { method:'POST', body: JSON.stringify(payload), headers:{'Content-Type':'application/json'} });
-    const j = await r.json(); if(j.status==='success'){ document.getElementById('denomMsg').textContent='Saved: Total '+d.total; loadQuick(); } else { document.getElementById('denomMsg').textContent='Error: '+j.message; }
-  }catch(err){ document.getElementById('denomMsg').textContent='Error: '+err.message; }
-});
-
-// clear denom
-document.getElementById('clearDenom').addEventListener('click', ()=>{ document.querySelectorAll('.denom.nos').forEach(i=>i.value=''); computeDenom(); document.getElementById('denomMsg').textContent=''; });
-
-// entry submit
-document.getElementById('entryForm').addEventListener('submit', async (e)=>{ e.preventDefault(); const data = { date: document.getElementById('date').value || new Date().toISOString().slice(0,10), particular: transactionSelect.value, credit:'', debit:'', accountHead: accountHead.value, transaction: transactionSelect.value, parentMode: document.querySelector('input[name="mode"]:checked').value, amount: parseFloat(document.getElementById('amount').value||0), accountDetails:'', description: document.getElementById('description').value||'' };
-  // description validation
-  const len = data.description.trim().length; if(len < 500){ document.getElementById('entryMsg').textContent='Description must be at least 500 characters.'; return; }
-  if(len > 1500){ document.getElementById('entryMsg').textContent='Description must be max 1500 characters.'; return; }
-  // if cash, use denom total if available
-  if(data.parentMode === 'Cash'){ const d = computeDenom(); if(d.total>0) data.amount = d.total; }
-  if(data.accountHead === 'Receipt') data.credit = data.amount; else if(data.accountHead === 'Payment') data.debit = data.amount; else data.credit = data.amount;
-  if(data.parentMode === 'Bank'){ const name = document.getElementById('bankAccount').value; const b = BANK_ACCOUNTS[name]; data.accountDetails = name + ' | ' + b.acc + ' | ' + b.ifsc; } else data.accountDetails = 'Cash';
-  try{
-    const r = await fetch(GAS_URL + '?action=saveTransaction', { method:'POST', body: JSON.stringify(data), headers:{'Content-Type':'application/json'} });
-    const j = await r.json(); if(j.status==='success'){ document.getElementById('entryMsg').textContent = 'Saved row '+j.row; document.getElementById('entryForm').reset(); computeDenom(); loadQuick(); loadLists(); } else document.getElementById('entryMsg').textContent='Error: '+j.message;
-  }catch(err){ document.getElementById('entryMsg').textContent = 'Error: '+err.message; }
-});
-
-// clear entry
-document.getElementById('clearBtn').addEventListener('click', ()=>{ document.getElementById('entryForm').reset(); document.getElementById('entryMsg').textContent=''; });
-
-// login
-doLogin.addEventListener('click', async ()=>{ const u=document.getElementById('loginUser').value.trim(); const p=document.getElementById('loginPass').value; if(!u||!p){ loginMsg.textContent='Enter username/password'; return; } loginMsg.textContent=''; try{ const r = await fetch(GAS_URL + '?action=login', { method:'POST', body: JSON.stringify({username:u,password:p}), headers:{'Content-Type':'application/json'} }); const j = await r.json(); if(j.status==='success'){ loginCard.classList.add('hidden'); mainCard.classList.remove('hidden'); userPill.classList.remove('hidden'); userPill.textContent = j.user; curUser.textContent = j.user; loadQuick(); loadLists(); } else { loginMsg.textContent = 'Login failed'; } } catch(err){ loginMsg.textContent = 'Error: '+err.message; } });
-
-// demo login
-loginDemo.addEventListener('click', ()=>{ document.getElementById('loginUser').value='admin'; document.getElementById('loginPass').value='admin123'; doLogin.click(); });
-
-// logout
-logoutBtn.addEventListener('click', ()=>{ location.reload(); });
-
-// load quick preview
-async function loadQuick(){ try{ const r = await fetch(GAS_URL + '?action=getCombined'); const j = await r.json(); if(j.status==='success'){ const rows = j.data || []; document.getElementById('quickPreview').textContent = 'Total transactions: ' + (rows.length-1); document.getElementById('cashList').innerHTML = '<pre>'+JSON.stringify(rows.slice(-5),null,2)+'</pre>'; document.getElementById('bankList').innerHTML = '<pre>'+JSON.stringify(rows.filter(r=>r[6]==='Bank').slice(-5),null,2)+'</pre>'; document.getElementById('combinedList').innerHTML = '<pre>'+JSON.stringify(rows.slice(-10),null,2)+'</pre>'; } }catch(err){}
+// Login
+function login(){
+  const u=document.getElementById("user").value.trim();
+  const p=document.getElementById("pass").value.trim();
+  fetch(GAS_WEB_APP_URL+"?action=login&username="+encodeURIComponent(u)+"&password="+encodeURIComponent(p))
+  .then(r=>r.text())
+  .then(txt=>{
+    if(txt.trim()=="success"){
+      document.getElementById("login-card").classList.add("hidden");
+      document.getElementById("portal-card").classList.remove("hidden");
+    } else {
+      document.getElementById("login-msg").innerText="Invalid login!";
+    }
+  })
+  .catch(()=>document.getElementById("login-msg").innerText="Connection error");
 }
-function loadLists(){ loadQuick(); }
 
-// initial
-showTab('entry');
+// Tabs
+function showTab(id){
+  document.getElementById("entry").classList.add("hidden");
+  document.getElementById("denom").classList.add("hidden");
+  document.getElementById(id).classList.remove("hidden");
+}
 
+// Populate denomination rows
+const values=[500,200,100,50,20,10,5,2,1];
+const tbody=document.getElementById("denoRows");
+values.forEach(v=>{
+  const tr=document.createElement("tr");
+  tr.innerHTML=`<td>${v}</td>
+    <td><input type="number" min="0" id="nos${v}" style="width:70px" onchange="calcTotal()"></td>
+    <td id="amt${v}">0</td>`;
+  tbody.appendChild(tr);
+});
+function calcTotal(){
+  let tot=0;
+  values.forEach(v=>{
+    const nos=Number(document.getElementById("nos"+v).value||0);
+    const amt=v*nos;
+    document.getElementById("amt"+v).innerText=amt;
+    tot+=amt;
+  });
+  document.getElementById("totalAmt").innerText=tot;
+  document.getElementById("amount").value=tot;
+}
+
+// Account-head dependent transactions
+function populateTransactions(){
+  const head=document.getElementById("accountHead").value;
+  const t=document.getElementById("transaction");
+  t.innerHTML="";
+  let list=[];
+  if(head=="Receipt"){
+    list=['Due Amount','TRY Branch B2B Due Amount','Loan return','Interest gave','MD investment','JD 1 investment','JD 2 investment','Office Expenses Return','Office Maintenance Return','Salary return','Salary Advance Return','Settlement amount Return','Loan Return','Personal Amount Return','A/Withdrawn','Petrol allowance Return','Cancel Chit Commission Amount'];
+  } else if(head=="Payment"){
+    list=['Office Expenses','Office Maintenance','Salary','Salary Advance','Settlement amount','Loan','Personal Amount','Cash Deposited','Petrol Allowance','Interest Amount Paid To','Adjustment Amount','Loan return','Travel Allowance','Cancel chit','Bank Transfer','Adjustment Entry'];
+  }
+  list.forEach(v=>{
+    const opt=document.createElement("option");
+    opt.textContent=v;
+    t.appendChild(opt);
+  });
+}
+
+// Toggle payment sections
+function togglePayment(val){
+  document.getElementById("bankDetails").classList.add("hidden");
+  document.getElementById("denomination").classList.add("hidden");
+  if(val=="Bank") document.getElementById("bankDetails").classList.remove("hidden");
+  if(val=="Cash") document.getElementById("denomination").classList.remove("hidden");
+}
+
+function fillBankDetails(){
+  const name=document.getElementById("bankName").value;
+  let no="",ifsc="";
+  switch(name){
+    case "JOTHIANANDHAM CHITS PRIVATE LIMITED": no="1647135000003804"; ifsc="KVBL0001647"; break;
+    case "Ashok sir AC KVB": no="1647172000005736"; ifsc="KVBL0001647"; break;
+    case "Ashok sir AC Gpay": no="Ashok sir Gpay-455"; ifsc="Gpay-00000"; break;
+    case "Dhanapal sir AC": no="Dhanapal sir AC-4735"; ifsc="Gpay-4735"; break;
+    case "Dhanapal sir Axis AC": no="925010008681059"; ifsc="UTIB0001563"; break;
+  }
+  document.getElementById("accNo").value=no;
+  document.getElementById("ifsc").value=ifsc;
+}
+
+// Save to Sheet
+function saveData(){
+  const data={
+    action:"saveTransaction",
+    date:document.getElementById("date").value,
+    head:document.getElementById("accountHead").value,
+    transaction:document.getElementById("transaction").value,
+    mode:document.querySelector('input[name="paymode"]:checked')?.value||"",
+    amount:document.getElementById("amount").value,
+    bankName:document.getElementById("bankName").value,
+    accNo:document.getElementById("accNo").value,
+    ifsc:document.getElementById("ifsc").value,
+    desc:document.getElementById("desc").value
+  };
+  fetch(GAS_WEB_APP_URL,{method:"POST",body:JSON.stringify(data)})
+  .then(r=>r.text())
+  .then(res=>{
+    document.getElementById("msg").innerText=res;
+    clearForm();
+  })
+  .catch(()=>document.getElementById("msg").innerText="Error saving!");
+}
+
+function clearForm(){
+  document.querySelectorAll("input,textarea,select").forEach(e=>{if(e.type!='radio')e.value="";});
+  document.querySelectorAll('input[name="paymode"]').forEach(r=>r.checked=false);
+  document.getElementById("bankDetails").classList.add("hidden");
+  document.getElementById("denomination").classList.add("hidden");
+  document.getElementById("msg").innerText="";
+}
 </script>
 </body>
 </html>
-
-
-
