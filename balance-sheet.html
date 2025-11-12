@@ -14,18 +14,17 @@
     }
     header {
       background-color: #0d47a1;
-      color: white;
-      padding: 18px 20px;
+      color: #fff;
       text-align: center;
+      padding: 18px;
       font-size: 26px;
       font-weight: 600;
-      letter-spacing: 1px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.2);
     }
     .container {
       max-width: 900px;
+      background: #fff;
       margin: 40px auto;
-      background: white;
       border-radius: 16px;
       padding: 30px;
       box-shadow: 0 6px 15px rgba(0,0,0,0.15);
@@ -39,21 +38,18 @@
       text-align: left;
       padding: 10px 12px;
       border-bottom: 1px solid #ddd;
+      font-size: 16px;
     }
     th {
       background-color: #e3f2fd;
       color: #0d47a1;
       font-size: 17px;
     }
-    td {
-      font-size: 16px;
-      color: #333;
-    }
     .section-title {
       font-weight: bold;
       color: #0d47a1;
-      margin-top: 20px;
-      font-size: 18px;
+      font-size: 20px;
+      margin-top: 30px;
       border-left: 4px solid #0d47a1;
       padding-left: 10px;
     }
@@ -67,26 +63,28 @@
 </head>
 <body>
   <header><i class="fa-solid fa-scale-balanced"></i> Balance Sheet</header>
+
   <div class="container">
-    <div class="section-title">ASSETS</div>
-    <table id="assetsTable">
+    <div class="section-title">ASSETS / LIABILITIES</div>
+    <table id="balTable">
       <thead>
-        <tr><th>Current Assets</th><th>Amount</th><th>Current Liabilities</th><th>Amount</th></tr>
+        <tr>
+          <th>ASSETS</th><th>Amount</th>
+          <th>LIABILITIES</th><th>Amount</th>
+        </tr>
       </thead>
       <tbody></tbody>
     </table>
 
     <div class="section-title">EQUITY</div>
     <table id="equityTable">
-      <thead><tr><th>Particulars</th><th>Amount</th></tr></thead>
+      <thead>
+        <tr><th>Particulars</th><th>Amount</th></tr>
+      </thead>
       <tbody></tbody>
     </table>
-
-    <div class="section-title">TOTAL</div>
-    <table>
-      <tbody id="totalTable"></tbody>
-    </table>
   </div>
+
   <div class="footer">© 2025 Finance Dashboard</div>
 
   <script>
@@ -94,35 +92,34 @@
 
     async function loadBalanceSheet() {
       try {
-        const res = await fetch(SCRIPT_URL + "?sheet=Balance%20Sheet");
-        const data = await res.json();
+        const response = await fetch(SCRIPT_URL + "?sheet=Balance%20sheet");
+        const data = await response.json();
 
-        const assetsTbody = document.querySelector("#assetsTable tbody");
-        const equityTbody = document.querySelector("#equityTable tbody");
-        const totalTbody = document.querySelector("#totalTable");
+        const tbody = document.querySelector("#balTable tbody");
+        const eqBody = document.querySelector("#equityTable tbody");
 
-        assetsTbody.innerHTML = "";
-        equityTbody.innerHTML = "";
-        totalTbody.innerHTML = "";
+        tbody.innerHTML = "";
+        eqBody.innerHTML = "";
 
-        data.assets.forEach((row, i) => {
+        // first part: ASSETS & LIABILITIES
+        const maxRows = Math.max(data.assets.length, data.liabilities.length);
+        for (let i = 0; i < maxRows; i++) {
+          const asset = data.assets[i] || ["", ""];
           const liab = data.liabilities[i] || ["", ""];
-          assetsTbody.innerHTML += `<tr>
-            <td>${row[0]}</td><td>${row[1]}</td>
-            <td>${liab[0]}</td><td>${liab[1]}</td>
-          </tr>`;
-        });
+          tbody.innerHTML += `
+            <tr>
+              <td>${asset[0] || ""}</td><td>${asset[1] || ""}</td>
+              <td>${liab[0] || ""}</td><td>${liab[1] || ""}</td>
+            </tr>`;
+        }
 
+        // second part: EQUITY
         data.equity.forEach(row => {
-          equityTbody.innerHTML += `<tr><td>${row[0]}</td><td>${row[1]}</td></tr>`;
+          eqBody.innerHTML += `<tr><td>${row[0]}</td><td>${row[1]}</td></tr>`;
         });
 
-        totalTbody.innerHTML = `
-          <tr><td><b>Total Assets</b></td><td>${data.totalAssets}</td><td><b>Total Liabilities</b></td><td>${data.totalLiabilities}</td></tr>
-          <tr><td><b>Total Equity</b></td><td>${data.totalEquity}</td><td><b>Total Liab. + Equity</b></td><td>${data.totalLiabEquity}</td></tr>
-        `;
       } catch (err) {
-        console.error("Error fetching sheet:", err);
+        console.error("Error fetching data:", err);
       }
     }
 
