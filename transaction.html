@@ -6,206 +6,102 @@
   <title>Transaction Entry</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    * {
-      box-sizing: border-box;
-      font-family: "Poppins", sans-serif;
-    }
+    * { box-sizing: border-box; font-family: "Poppins", sans-serif; }
     body {
-      margin: 0;
-      background: linear-gradient(135deg, #001f3f, #004080, #0074D9);
-      color: white;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
+      margin: 0; background: linear-gradient(135deg, #001f3f, #004080, #0074D9);
+      color: white; min-height: 100vh; display: flex; flex-direction: column;
     }
     header {
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(6px);
-      text-align: center;
-      padding: 15px;
-      font-size: 24px;
-      font-weight: 600;
-      letter-spacing: 1px;
+      background: rgba(255,255,255,0.1); text-align: center;
+      padding: 15px; font-size: 24px; font-weight: 600;
       border-bottom: 1px solid rgba(255,255,255,0.2);
     }
-    main {
-      flex: 1;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      padding: 30px;
-    }
+    main { flex: 1; display: flex; justify-content: center; padding: 30px; }
     .card {
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 15px;
-      padding: 25px;
-      width: 100%;
-      max-width: 800px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      background: rgba(255,255,255,0.1); border-radius: 15px; padding: 25px;
+      width: 100%; max-width: 800px; box-shadow: 0 8px 20px rgba(0,0,0,0.2);
       backdrop-filter: blur(8px);
     }
-    h2 {
-      margin-bottom: 20px;
-      text-align: center;
-      font-weight: 600;
-      border-bottom: 2px solid rgba(255,255,255,0.2);
-      padding-bottom: 10px;
-    }
-    label {
-      display: block;
-      margin-top: 15px;
-      font-weight: 500;
-    }
+    label { display: block; margin-top: 15px; font-weight: 500; }
     input, select, textarea {
-      width: 100%;
-      padding: 10px;
-      margin-top: 6px;
-      border: none;
-      border-radius: 6px;
-      outline: none;
-      background: rgba(255,255,255,0.9);
-      color: #333;
+      width: 100%; padding: 10px; margin-top: 6px; border: none; border-radius: 6px;
+      background: rgba(255,255,255,0.9); color: #333;
     }
     button {
-      margin-top: 25px;
-      padding: 12px 25px;
-      font-size: 16px;
-      font-weight: 600;
-      border: none;
-      border-radius: 8px;
-      background: #00b894;
-      color: white;
-      cursor: pointer;
-      transition: 0.3s;
+      margin-top: 25px; padding: 12px 25px; font-size: 16px; font-weight: 600;
+      border: none; border-radius: 8px; background: #00b894; color: white;
+      cursor: pointer; transition: 0.3s;
     }
-    button:hover {
-      background: #009e7a;
-    }
-    .row {
-      display: flex;
-      gap: 20px;
-    }
-    .row > div {
-      flex: 1;
-    }
-    table {
-      width: 100%;
-      margin-top: 15px;
-      border-collapse: collapse;
-      background: rgba(255,255,255,0.9);
-      color: #333;
-    }
-    th, td {
-      padding: 8px;
-      text-align: center;
-      border-bottom: 1px solid #ddd;
-    }
-    th {
-      background: #0074D9;
-      color: white;
-    }
+    button:hover { background: #009e7a; }
+    table { width: 100%; margin-top: 15px; border-collapse: collapse; background: rgba(255,255,255,0.9); color: #333; }
+    th, td { padding: 8px; text-align: center; border-bottom: 1px solid #ddd; }
+    th { background: #0074D9; color: white; }
   </style>
 </head>
 <body>
-  <header>
-    <i class="fa-solid fa-coins"></i> Transaction Entry Portal
-  </header>
-
+  <header><i class="fa-solid fa-coins"></i> Transaction Entry</header>
   <main>
     <div class="card">
       <h2><i class="fa-solid fa-file-invoice-dollar"></i> New Transaction</h2>
-
-      <div class="row">
-        <div>
-          <label>Date</label>
-          <input type="date" id="date" />
-        </div>
-        <div>
-          <label>Transaction Type</label>
-          <select id="transaction">
-            <option value="">Select</option>
-            <option>Income</option>
-            <option>Expense</option>
-          </select>
-        </div>
-      </div>
-
-      <label>Head</label>
-      <input type="text" id="head" placeholder="Enter head name" />
-
+      <label>Date</label><input type="date" id="date">
+      <label>Transaction Type</label>
+      <select id="transaction"><option value="">Select</option><option>Income</option><option>Expense</option></select>
+      <label>Head</label><input type="text" id="head" placeholder="Enter head name">
       <label>Mode</label>
-      <select id="mode" onchange="toggleDenomination()">
-        <option value="">Select</option>
-        <option>Cash</option>
-        <option>Bank</option>
-      </select>
+      <select id="mode" onchange="toggleFields()"><option value="">Select</option><option>Cash</option><option>Bank</option></select>
 
       <div id="bankFields" style="display:none;">
-        <label>Bank Name</label>
-        <input type="text" id="bankName" placeholder="Bank Name" />
-        <label>Account No</label>
-        <input type="text" id="accNo" placeholder="Account Number" />
-        <label>IFSC Code</label>
-        <input type="text" id="ifsc" placeholder="IFSC Code" />
+        <label>Bank Name</label><input type="text" id="bankName">
+        <label>Account No</label><input type="text" id="accNo">
+        <label>IFSC Code</label><input type="text" id="ifsc">
       </div>
 
-      <label>Amount</label>
-      <input type="number" id="amount" placeholder="Enter amount" />
-
-      <label>Description</label>
-      <textarea id="desc" rows="3" placeholder="Enter details..."></textarea>
+      <label>Amount</label><input type="number" id="amount">
+      <label>Description</label><textarea id="desc" rows="3"></textarea>
 
       <div id="denominationCard" style="display:none;">
-        <h3>Denomination Details</h3>
+        <h3>Denomination</h3>
         <table>
-          <thead>
-            <tr>
-              <th>Value</th>
-              <th>Nos</th>
-              <th>Total</th>
-            </tr>
-          </thead>
+          <thead><tr><th>Value</th><th>Nos</th><th>Total</th></tr></thead>
           <tbody id="denominationBody"></tbody>
         </table>
       </div>
 
-      <button onclick="saveTransaction()">
-        <i class="fa-solid fa-paper-plane"></i> Save Transaction
-      </button>
-
+      <button onclick="saveTransaction()">Save Transaction</button>
       <p id="msg" style="text-align:center;margin-top:15px;font-weight:600;"></p>
     </div>
   </main>
 
   <script>
-    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzYxw3jLtjG_1kkRpWSQQylrTbvhsrp1Qju36oR5jIOGw6iZWwXkqNE_6ktG-im7AX9/exec";
-
+    const GAS_URL = "YOUR_SCRIPT_URL_HERE";
     const denominationValues = [2000, 500, 200, 100, 50, 20, 10];
-    const denomBody = document.getElementById("denominationBody");
+    const body = document.getElementById("denominationBody");
 
     denominationValues.forEach(v => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
+      const row = document.createElement("tr");
+      row.innerHTML = `
         <td>${v}</td>
-        <td><input type="number" min="0" value="0" data-value="${v}" onchange="calcTotal(this)"></td>
-        <td class="total">0</td>
-      `;
-      denomBody.appendChild(tr);
+        <td><input type="number" min="0" value="0" data-value="${v}" onchange="updateRow(this)"></td>
+        <td class="total">0</td>`;
+      body.appendChild(row);
     });
 
-    function toggleDenomination() {
-      const mode = document.getElementById("mode").value;
-      document.getElementById("denominationCard").style.display = mode === "Cash" ? "block" : "none";
-      document.getElementById("bankFields").style.display = mode === "Bank" ? "block" : "none";
-    }
-
-    function calcTotal(input) {
+    function updateRow(input) {
       const val = Number(input.dataset.value);
       const nos = Number(input.value);
       input.closest("tr").querySelector(".total").innerText = val * nos;
     }
 
+    function toggleFields() {
+      const mode = document.getElementById("mode").value;
+      document.getElementById("denominationCard").style.display = mode === "Cash" ? "block" : "none";
+      document.getElementById("bankFields").style.display = mode === "Bank" ? "block" : "none";
+    }
+
     async function saveTransaction() {
+      const msg = document.getElementById("msg");
+      msg.innerText = "Saving...";
+
       const data = {
         action: "saveTransaction",
         date: document.getElementById("date").value,
@@ -223,34 +119,18 @@
         }))
       };
 
-      document.getElementById("msg").innerText = "Saving...";
       try {
-        const res = await fetch(GAS_WEB_APP_URL, {
+        const res = await fetch(GAS_URL, {
           method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(data)
         });
-  method: "POST",
-  body: JSON.stringify({
-    action: "saveTransaction",
-    date: dateValue,
-    transaction: transactionType,
-    head: headValue,
-    mode: modeValue,
-    amount: amountValue,
-    bankName: bankValue,
-    accNo: accNoValue,
-    ifsc: ifscValue,
-    desc: descValue,
-    denomination: denominationArray
-  }),
-});
         const text = await res.text();
-        document.getElementById("msg").innerText = text;
+        msg.innerText = text;
       } catch (err) {
-        document.getElementById("msg").innerText = "Error: " + err.message;
+        msg.innerText = "Error: " + err.message;
       }
     }
   </script>
 </body>
 </html>
-
