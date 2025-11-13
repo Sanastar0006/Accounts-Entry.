@@ -206,9 +206,7 @@
       input.closest("tr").querySelector(".total").innerText = val * nos;
     }
 
-    async function saveTransaction() {
-      const msg = document.getElementById("msg");
-
+     async function saveTransaction() {
       const data = {
         action: "saveTransaction",
         date: document.getElementById("date").value,
@@ -226,22 +224,20 @@
         }))
       };
 
-      msg.innerText = "Saving...";
-
+      document.getElementById("msg").innerText = "Saving...";
       try {
         const res = await fetch(GAS_WEB_APP_URL, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(data)
         });
-
         const text = await res.text();
-        msg.innerText = text.includes("Success") ? "✅ Transaction Saved!" : text;
+        document.getElementById("msg").innerText = text;
       } catch (err) {
-        msg.innerText = "❌ Error: " + err.message;
+        document.getElementById("msg").innerText = "Error: " + err.message;
       }
     }
   </script>
 </body>
 </html>
+
 
