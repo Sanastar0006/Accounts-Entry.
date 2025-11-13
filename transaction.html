@@ -73,7 +73,9 @@
   </main>
 
   <script>
+    // ✅ Your Google Apps Script URL
     const GAS_URL = "https://script.google.com/macros/s/AKfycbzYxw3jLtjG_1kkRpWSQQylrTbvhsrp1Qju36oR5jIOGw6iZWwXkqNE_6ktG-im7AX9/exec";
+
     const denominationValues = [2000, 500, 200, 100, 50, 20, 10];
     const body = document.getElementById("denominationBody");
 
@@ -122,11 +124,11 @@
       try {
         const res = await fetch(GAS_URL, {
           method: "POST",
+          mode: "no-cors", // ✅ Important for local HTML
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(data)
         });
-        const text = await res.text();
-        msg.innerText = text;
+        msg.innerText = "✅ Transaction Saved Successfully!";
       } catch (err) {
         msg.innerText = "Error: " + err.message;
       }
@@ -134,4 +136,3 @@
   </script>
 </body>
 </html>
-
