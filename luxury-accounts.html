@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Luxury Accounts Portal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#0f1724;
+      --card:#0b1220;
+      --muted:#94a3b8;
+      --accent:#8b5cf6;
+      --accent-2:#06b6d4;
+      --glass: rgba(255,255,255,0.03);
+      --radius:16px;
+      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:linear-gradient(180deg,#071022 0%, #081127 60%);color:#e6eef8}
+    .app{display:grid;grid-template-columns:260px 1fr;gap:24px;min-height:100vh;padding:28px}
+    .sidebar{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:var(--radius);padding:20px;width:260px}
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:grid;place-items:center;font-weight:800}
+    .brand h1{margin:0;font-size:16px}
+    .nav{margin-top:20px}
+    .nav button{display:flex;align-items:center;gap:10px;width:100%;padding:10px;border-radius:10px;border:0;background:transparent;color:var(--muted);cursor:pointer}
+    .nav button.active{background:linear-gradient(90deg,rgba(139,92,246,0.14),rgba(6,182,212,0.06));color:#fff}
+    .main{padding:24px;border-radius:var(--radius);background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));backdrop-filter: blur(6px)}
+    .top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .search{display:flex;align-items:center;gap:12px}
+    .search input{background:var(--glass);border:1px solid rgba(255,255,255,0.03);padding:10px;border-radius:10px;color:#e6eef8}
+    .actions{display:flex;gap:8px}
+    .btn{padding:10px 14px;border-radius:10px;border:0;cursor:pointer;font-weight:600}
+    .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted)}
+    .btn.primary{background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#06121a}
+    .card{margin-top:18px;padding:18px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01))}
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    .stat{padding:12px;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00))}
+    .table{margin-top:14px;border-radius:10px;overflow:auto}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:12px;text-align:left;border-bottom:1px solid rgba(255,255,255,0.03)}
+    th{font-size:13px;color:var(--muted);font-weight:600}
+    td{font-size:14px}
+    .tag{padding:6px 8px;border-radius:8px;font-weight:600}
+    .credit{background:rgba(6,182,212,0.12);color:var(--accent-2)}
+    .debit{background:rgba(139,92,246,0.12);color:var(--accent)}
+    .modal{position:fixed;left:0;top:0;width:100%;height:100%;display:none;align-items:center;justify-content:center;background:linear-gradient(180deg, rgba(2,6,23,0.5), rgba(2,6,23,0.7));z-index:60}
+    .modal.open{display:flex}
+    .modal-card{width:920px;border-radius:12px;padding:18px;background:linear-gradient(180deg,#061223,#061421);box-shadow:0 8px 30px rgba(2,6,23,0.6)}
+    .row{display:flex;gap:12px}
+    .col{flex:1}
+    input,select,textarea{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:#e6eef8}
+    .small{font-size:12px;color:var(--muted)}
+    .right{text-align:right}
+    footer{margin-top:18px;color:var(--muted);font-size:13px;text-align:center}
+    @media(max-width:900px){.app{grid-template-columns:1fr;}.sidebar{width:auto}.grid{grid-template-columns:repeat(1,1fr)}.modal-card{width:95%}}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand"><div class="logo">LA</div><div><h1>Luxury Accounts</h1><div class="small">Smart accounting portal</div></div></div>
+      <nav class="nav">
+        <button class="active" data-view="dashboard">Dashboard</button>
+        <button data-view="transactions">Transactions</button>
+        <button data-view="customers">Customers</button>
+        <button data-view="reports">Reports</button>
+        <button data-view="settings">Settings</button>
+      </nav>
+      <div style="margin-top:18px" class="small">Version: 1.0 • Local demo</div>
+    </aside>
+
+    <main class="main">
+      <div class="top">
+        <div class="search">
+          <input id="globalSearch" placeholder="Search transactions, names, IDs..." />
+        </div>
+        <div class="actions">
+          <button class="btn ghost" id="importBtn">Import CSV</button>
+          <button class="btn ghost" id="exportBtn">Export CSV</button>
+          <button class="btn primary" id="newTxnBtn">New Transaction</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="grid">
+          <div class="stat">
+            <div class="small">Total Balance</div>
+            <div style="font-size:20px;font-weight:800;margin-top:8px">₹ <span id="balance">0.00</span></div>
+            <div class="small">Updated live • Local-only</div>
+          </div>
+          <div class="stat">
+            <div class="small">Total Credits</div>
+            <div style="font-size:20px;font-weight:800;margin-top:8px">₹ <span id="credits">0.00</span></div>
+            <div class="small">Sum of credit transactions</div>
+          </div>
+          <div class="stat">
+            <div class="small">Total Debits</div>
+            <div style="font-size:20px;font-weight:800;margin-top:8px">₹ <span id="debits">0.00</span></div>
+            <div class="small">Sum of debit transactions</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <h3 style="margin:0">Transactions</h3>
+          <div class="small">Total: <span id="totalCount">0</span></div>
+        </div>
+        <div class="table">
+          <table id="txTable">
+            <thead>
+              <tr><th>Date</th><th>Type</th><th>Account / Name</th><th>Memo</th><th class="right">Amount</th><th>Actions</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <footer>Made for you — demo portal. Want Google Sheets / server sync? Ask and I'll add it.</footer>
+    </main>
+  </div>
+
+  <div class="modal" id="modal">
+    <div class="modal-card">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <h2 id="modalTitle">New Transaction</h2>
+        <button class="btn ghost" id="closeModal">Close</button>
+      </div>
+      <div style="margin-top:12px">
+        <div class="row">
+          <div class="col">
+            <label class="small">Date</label>
+            <input id="txnDate" type="date" />
+          </div>
+          <div class="col">
+            <label class="small">Type</label>
+            <select id="txnType"><option value="credit">Credit</option><option value="debit">Debit</option></select>
+          </div>
+          <div class="col">
+            <label class="small">Amount</label>
+            <input id="txnAmount" type="number" step="0.01" placeholder="0.00" />
+          </div>
+        </div>
+        <div style="margin-top:12px" class="row">
+          <div class="col">
+            <label class="small">Account / Counterparty</label>
+            <input id="txnAccount" placeholder="e.g., Cash / Bank / Customer name" />
+          </div>
+          <div class="col">
+            <label class="small">Category / Ledger</label>
+            <input id="txnCategory" placeholder="e.g., Sales, Rent, Salary" />
+          </div>
+          <div class="col">
+            <label class="small">Reference / ID</label>
+            <input id="txnRef" placeholder="Optional ID" />
+          </div>
+        </div>
+        <div style="margin-top:12px">
+          <label class="small">Memo</label>
+          <textarea id="txnMemo" rows="3"></textarea>
+        </div>
+        <div style="margin-top:12px;display:flex;justify-content:flex-end;gap:8px">
+          <button class="btn ghost" id="clearForm">Clear</button>
+          <button class="btn primary" id="saveTxn">Save Transaction</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <input type="file" id="fileInput" accept="text/csv" style="display:none" />
+
+  <script>
+    const STORAGE_KEY = 'lux_accounts_txns_v1';
+    let txns = [];
+    let editId = null;
+
+    function uid(){return 'id_'+Math.random().toString(36).slice(2,9)}
+    function fmt(n){return Number(n||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2})}
+
+    function load(){
+      try{txns = JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]')}catch(e){txns=[]}
+      render();
+    }
+    function save(){localStorage.setItem(STORAGE_KEY,JSON.stringify(txns));render();}
+
+    function render(){
+      const tbody = document.querySelector('#txTable tbody');tbody.innerHTML='';
+      let credits=0,debits=0;
+      txns.slice().reverse().forEach(t=>{
+        const tr=document.createElement('tr');
+        tr.innerHTML=`
+          <td>${t.date}</td>
+          <td><span class="tag ${t.type==='credit'?'credit':'debit'}">${t.type.toUpperCase()}</span></td>
+          <td>${escapeHtml(t.account||'')}</td>
+          <td>${escapeHtml(t.memo||'')}<div class="small">${escapeHtml(t.category||'')}</div></td>
+          <td class="right">₹ ${fmt(t.amount)}</td>
+          <td><button class="btn ghost" onclick="editTxn('${t.id}')">Edit</button> <button class="btn ghost" onclick="deleteTxn('${t.id}')">Delete</button></td>
+        `;
+        tbody.appendChild(tr);
+        if(Number(t.amount)>0){ if(t.type==='credit') credits+=Number(t.amount); else debits+=Number(t.amount) }
+      })
+      document.getElementById('credits').innerText=fmt(credits);
+      document.getElementById('debits').innerText=fmt(debits);
+      document.getElementById('balance').innerText=fmt(credits-debits);
+      document.getElementById('totalCount').innerText=txns.length;
+    }
+
+    function escapeHtml(s){return (s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;')}
+
+    function openModal(){document.getElementById('modal').classList.add('open');document.getElementById('modalTitle').innerText=editId?'Edit Transaction':'New Transaction';}
+    function closeModal(){document.getElementById('modal').classList.remove('open');editId=null;clearForm()}
+
+    function clearForm(){document.getElementById('txnDate').value='';document.getElementById('txnType').value='credit';document.getElementById('txnAmount').value='';document.getElementById('txnAccount').value='';document.getElementById('txnCategory').value='';document.getElementById('txnRef').value='';document.getElementById('txnMemo').value='';}
+
+    function newTxn(){editId=null;clearForm();openModal();document.getElementById('txnDate').value=new Date().toISOString().slice(0,10)}
+
+    function editTxn(id){
+      const t = txns.find(x=>x.id===id);if(!t) return alert('Not found');editId=id;
+      document.getElementById('txnDate').value=t.date;
+      document.getElementById('txnType').value=t.type;
+      document.getElementById('txnAmount').value=t.amount;
+      document.getElementById('txnAccount').value=t.account;
+      document.getElementById('txnCategory').value=t.category;
+      document.getElementById('txnRef').value=t.ref||'';
+      document.getElementById('txnMemo').value=t.memo||'';
+      openModal();
+    }
+
+    function deleteTxn(id){if(!confirm('Delete this transaction?'))return;txns=txns.filter(x=>x.id!==id);save();}
+
+    function saveForm(){
+      const date=document.getElementById('txnDate').value || new Date().toISOString().slice(0,10);
+      const type=document.getElementById('txnType').value;
+      const amount = Math.abs(Number(document.getElementById('txnAmount').value||0));
+      if(!amount){return alert('Enter valid amount')}
+      const account=document.getElementById('txnAccount').value;
+      const category=document.getElementById('txnCategory').value;
+      const ref=document.getElementById('txnRef').value;
+      const memo=document.getElementById('txnMemo').value;
+
+      if(editId){
+        const idx = txns.findIndex(x=>x.id===editId);if(idx===-1)return alert('Edit failed');
+        txns[idx] = {...txns[idx],date,type,amount,account,category,ref,memo};
+      } else {
+        txns.push({id:uid(),date,type,amount,account,category,ref,memo});
+      }
+      save();closeModal();
+    }
+
+    function exportCSV(){
+      if(!txns.length) return alert('No transactions to export');
+      const headers=['id','date','type','amount','account','category','ref','memo'];
+      const csv = headers.join(',')+'\n'+txns.map(t=>headers.map(h=>'"'+((t[h]||'').toString().replace(/"/g,'""'))+'"').join(',')).join('\n');
+      const blob = new Blob([csv],{type:'text/csv'});
+      const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='luxury_txns.csv';a.click();URL.revokeObjectURL(url);
+    }
+
+    function importCSVFile(file){
+      const reader=new FileReader();reader.onload=e=>{
+        const text=e.target.result;const lines=text.split(/\r?\n/).filter(Boolean);if(!lines.length)return alert('CSV empty');
+        const headers = lines[0].split(',').map(h=>h.replace(/"/g,'').trim());
+        const newTx=[];
+        for(let i=1;i<lines.length;i++){
+          const cols = parseCSVLine(lines[i]);
+          if(cols.length<headers.length) continue;
+          const obj={};for(let j=0;j<headers.length;j++){obj[headers[j]] = cols[j]}
+          newTx.push({id:obj.id||uid(),date:obj.date||new Date().toISOString().slice(0,10),type:obj.type||'credit',amount:Math.abs(Number(obj.amount||0)),account:obj.account,category:obj.category,ref:obj.ref,memo:obj.memo});
+        }
+        txns = txns.concat(newTx);save();alert('Imported '+newTx.length+' rows');
+      };
+      reader.readAsText(file);
+    }
+
+    function parseCSVLine(line){
+      const out = [];
+      let cur = '';
+      let inQuotes = false;
+      for(let i=0;i<line.length;i++){
+        const ch = line[i];
+        if(ch==='"'){
+          if(inQuotes && line[i+1]==='"'){cur+='"'; i++;} else {inQuotes = !inQuotes}
+        } else if(ch===',' && !inQuotes){out.push(cur);cur='';} else {cur+=ch}
+      }
+      out.push(cur);
+      return out.map(s=>s.replace(/^"|"$/g,'').replace(/""/g,'"'));
+    }
+
+    document.getElementById('newTxnBtn').addEventListener('click',newTxn);
+    document.getElementById('closeModal').addEventListener('click',closeModal);
+    document.getElementById('saveTxn').addEventListener('click',saveForm);
+    document.getElementById('clearForm').addEventListener('click',clearForm);
+    document.getElementById('exportBtn').addEventListener('click',exportCSV);
+    document.getElementById('importBtn').addEventListener('click',()=>document.getElementById('fileInput').click());
+    document.getElementById('fileInput').addEventListener('change',e=>{if(e.target.files[0]) importCSVFile(e.target.files[0]);e.target.value='';});
+
+    document.getElementById('globalSearch').addEventListener('input',function(e){
+      const q = e.target.value.toLowerCase().trim();
+      const tbody = document.querySelector('#txTable tbody');tbody.innerHTML='';
+      const filtered = txns.filter(t=>[t.date,t.account,t.category,t.memo,t.ref,t.type,(t.amount||'')+""].join(' ').toLowerCase().includes(q));
+      filtered.slice().reverse().forEach(t=>{
+        const tr=document.createElement('tr');
+        tr.innerHTML=`
+          <td>${t.date}</td>
+          <td><span class="tag ${t.type==='credit'?'credit':'debit'}">${t.type.toUpperCase()}</span></td>
+          <td>${escapeHtml(t.account||'')}</td>
+          <td>${escapeHtml(t.memo||'')}<div class="small">${escapeHtml(t.category||'')}</div></td>
+          <td class="right">₹ ${fmt(t.amount)}</td>
+          <td><button class="btn ghost" onclick="editTxn('${t.id}')">Edit</button> <button class="btn ghost" onclick="deleteTxn('${t.id}')">Delete</button></td>
+        `;
+        tbody.appendChild(tr);
+      })
+    });
+
+    document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',e=>{
+      document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');
+      const view=b.dataset.view; if(view==='transactions') alert('Transactions view is the same as dashboard in this demo. I can add Ledger view if you want.');
+    }));
+
+    load();
+  </script>
+</body>
+</html>
